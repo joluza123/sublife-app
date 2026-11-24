@@ -1,25 +1,55 @@
 document.addEventListener('DOMContentLoaded', function () {
     // =========================================================================
-    // CONFIGURACIÓN EDITABLE DE SUBLIFE (Solo Franelas por ahora)
+    // CONFIGURACIÓN EDITABLE DE SUBLIFE (Catálogo de Prendas, Márgenes y DTF)
     // =========================================================================
-    const ZULIFE_CONFIG = {
+    const SUBLIFE_CONFIG = {
         brandName: 'SUBLIFE',
         whatsappNumber: '584129292352', // Reemplaza con el número de WhatsApp de SUBLIFE (código país + número sin +)
         currencySymbol: '$',
         pxPerInch: 25,
-        // Margen adicional (%) sobre el costo DTF (ej: 0.20 = +20% de margen; 0 = precios exactos de la tabla)
+        // Margen adicional (%) sobre el costo DTF (ej: 0.20 = +20% de margen)
         dtfMarginPercent: 0.20,
-        garment: {
-            id: 'franela',
-            name: 'Franela SUBLIFE',
-            basePrice: 12.00,
-            mockups: {
-                front:        'assets/images/franela_front.png',
-                back:         'assets/images/franela_back.png',
-                sleeve_left:  'assets/images/franela_sleeve_left.png',
-                sleeve_right: 'assets/images/franela_sleeve_right.png'
+        products: [
+            {
+                id: 'franela_algodon',
+                name: 'Franela Algodón SUBLIFE',
+                description: 'Corte clásico cómodo, ideal para uso diario y estampado DTF.',
+                basePrice: 12.00,
+                coverImage: 'assets/images/franela_front.png',
+                mockups: {
+                    front:        'assets/images/franela_front.png',
+                    back:         'assets/images/franela_back.png',
+                    sleeve_left:  'assets/images/franela_sleeve_left.png',
+                    sleeve_right: 'assets/images/franela_sleeve_right.png'
+                }
+            },
+            {
+                id: 'franela_oversize',
+                name: 'Franela Oversize SUBLIFE',
+                description: 'Caída amplia y hombros caídos con estilo urbano.',
+                basePrice: 16.00,
+                coverImage: 'assets/images/oversize_front.png',
+                mockups: {
+                    front:        'assets/images/oversize_front.png',
+                    back:         'assets/images/oversize_back.png',
+                    sleeve_left:  'assets/images/oversize_sleeve_left.png',
+                    sleeve_right: 'assets/images/oversize_sleeve_right.png'
+                }
+            },
+            {
+                id: 'hoodie_sublife',
+                name: 'Hoodie SUBLIFE',
+                description: 'Sudadera con capucha y bolsillo canguro para clima fresco.',
+                basePrice: 24.00,
+                coverImage: 'assets/images/hoodie_front.png',
+                mockups: {
+                    front:        'assets/images/hoodie_front.png',
+                    back:         'assets/images/hoodie_back.png',
+                    sleeve_left:  'assets/images/hoodie_sleeve_left.png',
+                    sleeve_right: 'assets/images/hoodie_sleeve_right.png'
+                }
             }
-        },
+        ],
         sizeTiers: [
             { label: '2x2',   w: 2.0,  h: 2.0,  price: 0.79 },
             { label: '4x2',   w: 4.0,  h: 2.0,  price: 1.49 },
@@ -46,8 +76,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const BASE_WIDTH  = 400;
     const BASE_HEIGHT = 500;
-    const sym         = ZULIFE_CONFIG.currencySymbol;
-    const pxPerInch   = ZULIFE_CONFIG.pxPerInch;
+    const sym         = SUBLIFE_CONFIG.currencySymbol;
+    const pxPerInch   = SUBLIFE_CONFIG.pxPerInch;
 
     const canvasElement = document.getElementById('zlCanvas');
     if (!canvasElement || typeof fabric === 'undefined') {
@@ -61,10 +91,10 @@ document.addEventListener('DOMContentLoaded', function () {
         backgroundColor: '#f8fafc'
     });
 
-    const selectedGarment = ZULIFE_CONFIG.garment;
-    let currentView       = 'front';
-    let currentZoom       = 1;
-    let isRestoring       = false;
+    let selectedProduct = SUBLIFE_CONFIG.products[0];
+    let currentView     = 'front';
+    let currentZoom     = 1;
+    let isRestoring     = false;
 
     let designsByView = {
         front: null,
@@ -75,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function getTierPriceWithMargin(tier) {
         const base = parseFloat(tier.price) || 0;
-        const margin = parseFloat(ZULIFE_CONFIG.dtfMarginPercent) || 0;
+        const margin = parseFloat(SUBLIFE_CONFIG.dtfMarginPercent) || 0;
         return +(base * (1 + margin)).toFixed(2);
     }
 
@@ -83,8 +113,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const w = Math.max(0.1, parseFloat(wIn) || 0.1);
         const h = Math.max(0.1, parseFloat(hIn) || 0.1);
 
-        for (let i = 0; i < ZULIFE_CONFIG.sizeTiers.length; i++) {
-            const tier = ZULIFE_CONFIG.sizeTiers[i];
+        for (let i = 0; i < SUBLIFE_CONFIG.sizeTiers.length; i++) {
+            const tier = SUBLIFE_CONFIG.sizeTiers[i];
             const tw = parseFloat(tier.w) || 0;
             const th = parseFloat(tier.h) || 0;
             const fitsNormal  = (w <= tw + 0.05 && h <= th + 0.05);
@@ -93,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return tier;
             }
         }
-        return ZULIFE_CONFIG.sizeTiers[ZULIFE_CONFIG.sizeTiers.length - 1];
+        return SUBLIFE_CONFIG.sizeTiers[SUBLIFE_CONFIG.sizeTiers.length - 1];
     }
 
     function getObjectInchesAndTier(obj) {
@@ -184,19 +214,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const breakdown = [];
         let dtfExtra = 0;
 
-        Object.keys(ZULIFE_CONFIG.zoneLabels).forEach(function (viewKey) {
+        Object.keys(SUBLIFE_CONFIG.zoneLabels).forEach(function (viewKey) {
             const calc = evaluateStateCost(designsByView[viewKey]);
             if (calc.hasDesign && calc.tier) {
                 dtfExtra += calc.price;
                 breakdown.push(
-                    ZULIFE_CONFIG.zoneLabels[viewKey] + ': ' +
+                    SUBLIFE_CONFIG.zoneLabels[viewKey] + ': ' +
                     calc.wIn.toFixed(1) + '"×' + calc.hIn.toFixed(1) + '" (' +
                     calc.tier.label + ' — +' + sym + calc.price.toFixed(2) + ')'
                 );
             }
         });
 
-        const basePrice  = parseFloat(selectedGarment.basePrice) || 0;
+        const basePrice  = parseFloat(selectedProduct.basePrice) || 0;
         const grandTotal = +(basePrice + dtfExtra).toFixed(2);
 
         return {
@@ -251,7 +281,6 @@ document.addEventListener('DOMContentLoaded', function () {
         positionFloatingBadge(null, null);
     });
 
-    // Dibuja una franela de prueba limpia si aún no hay imagen real en assets/images/
     function drawFallbackGarmentBackground(viewLabel, onDone) {
         const c = document.createElement('canvas');
         c.width = BASE_WIDTH;
@@ -279,7 +308,6 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.fill();
         ctx.stroke();
 
-        // Cuello de franela
         ctx.fillStyle = '#f8fafc';
         ctx.beginPath();
         ctx.ellipse(200, 62, 34, 14, 0, 0, Math.PI * 2);
@@ -289,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.fillStyle = '#334155';
         ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(selectedGarment.name + ' — ' + viewLabel, BASE_WIDTH / 2, 476);
+        ctx.fillText(selectedProduct.name + ' — ' + viewLabel, BASE_WIDTH / 2, 476);
 
         const bgImg = new fabric.Image(c, {
             originX: 'left',
@@ -304,10 +332,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function applyBackgroundForView(viewKey, onDone) {
-        const viewLabel = ZULIFE_CONFIG.zoneLabels[viewKey] || viewKey;
-        const imgUrl = selectedGarment.mockups[viewKey];
+        const viewLabel = SUBLIFE_CONFIG.zoneLabels[viewKey] || viewKey;
+        const imgUrl = selectedProduct.mockups[viewKey];
 
-        // Primero mostramos la silueta base para que nunca quede en blanco
         drawFallbackGarmentBackground(viewLabel, function () {
             if (!imgUrl) {
                 if (typeof onDone === 'function') onDone();
@@ -332,7 +359,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             };
             realImg.onerror = function () {
-                // Se mantiene la silueta de respaldo dibujada arriba
                 if (typeof onDone === 'function') onDone();
             };
             realImg.src = imgUrl;
@@ -374,6 +400,76 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+
+    // Navegación entre Catálogo y Personalizador
+    const catalogSection    = document.getElementById('sl-catalog-view');
+    const customizerSection = document.getElementById('sl-customizer-view');
+    const catalogGrid       = document.getElementById('sl-catalog-grid');
+    const activeBadge       = document.getElementById('slActiveProductBadge');
+
+    function openCustomizerForProduct(productId) {
+        const found = SUBLIFE_CONFIG.products.find(p => p.id === productId);
+        if (!found) return;
+
+        selectedProduct = found;
+        designsByView = {
+            front: null,
+            back: null,
+            sleeve_left: null,
+            sleeve_right: null
+        };
+
+        if (activeBadge) {
+            activeBadge.textContent = selectedProduct.name + ' (' + sym + selectedProduct.basePrice.toFixed(2) + ')';
+        }
+
+        document.querySelectorAll('.zl-btn-tab').forEach(t => t.classList.remove('active'));
+        const frontTab = document.querySelector('.zl-btn-tab[data-view="front"]');
+        if (frontTab) frontTab.classList.add('active');
+
+        catalogSection.style.display = 'none';
+        customizerSection.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        applyZoomLevel(1);
+        updateSummaryAndBadge();
+        loadMockup('front');
+    }
+
+    function renderCatalog() {
+        if (!catalogGrid) return;
+        catalogGrid.innerHTML = '';
+
+        SUBLIFE_CONFIG.products.forEach(function (prod) {
+            const card = document.createElement('div');
+            card.className = 'sl-product-card';
+
+            const imgSrc = prod.coverImage || prod.mockups.front || 'assets/images/franela_front.png';
+
+            card.innerHTML =
+                '<div class="sl-product-thumb">' +
+                    '<img src="' + imgSrc + '" alt="' + prod.name + '" onerror="this.src=\'assets/images/franela_front.png\'; this.onerror=null;">' +
+                '</div>' +
+                '<div class="sl-product-body">' +
+                    '<h3 class="sl-product-title">' + prod.name + '</h3>' +
+                    '<p class="sl-product-desc">' + (prod.description || '') + '</p>' +
+                    '<div class="sl-product-price">' + sym + parseFloat(prod.basePrice).toFixed(2) + '</div>' +
+                    '<button type="button" class="sl-btn-customize" data-product-id="' + prod.id + '">Personalizar prenda</button>' +
+                '</div>';
+
+            card.querySelector('.sl-btn-customize').addEventListener('click', function () {
+                openCustomizerForProduct(this.getAttribute('data-product-id'));
+            });
+
+            catalogGrid.appendChild(card);
+        });
+    }
+
+    document.getElementById('slBackToCatalogBtn').addEventListener('click', function () {
+        customizerSection.style.display = 'none';
+        catalogSection.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 
     function applyZoomLevel(newZoom) {
         currentZoom = Math.max(1, Math.min(2.5, +newZoom.toFixed(2)));
@@ -574,25 +670,6 @@ document.addEventListener('DOMContentLoaded', function () {
         reader.readAsDataURL(file);
     });
 
-    document.getElementById('zlAddTextBtn').addEventListener('click', function () {
-        const input = document.getElementById('zlTextInput');
-        const color = document.getElementById('zlTextColor').value || '#111827';
-        if (!input.value) return;
-
-        const text = new fabric.IText(input.value, {
-            left: 130,
-            top: 140,
-            fill: color,
-            fontSize: 26,
-            fontFamily: 'Arial'
-        });
-        canvas.add(text);
-        canvas.setActiveObject(text);
-        canvas.renderAll();
-        syncCurrentViewState();
-        input.value = '';
-    });
-
     document.getElementById('zlDeleteSelected').addEventListener('click', function () {
         const activeObj = canvas.getActiveObject();
         if (activeObj) {
@@ -609,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const prevZoom = currentZoom;
         applyZoomLevel(1);
         const link = document.createElement('a');
-        link.download = 'sublife-franela-' + currentView + '.png';
+        link.download = 'sublife-' + selectedProduct.id + '-' + currentView + '.png';
         link.href = canvas.toDataURL({ format: 'png', quality: 1 });
         link.click();
         applyZoomLevel(prevZoom);
@@ -621,12 +698,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const color = document.getElementById('zlColorSelect').value;
 
         let lines = [
-            '¡Hola *' + ZULIFE_CONFIG.brandName + '*! 👋 Quiero pedir una franela personalizada:',
+            '¡Hola *' + SUBLIFE_CONFIG.brandName + '*! 👋 Quiero pedir una prenda personalizada:',
             '',
-            '• *Prenda:* ' + selectedGarment.name,
+            '• *Prenda:* ' + selectedProduct.name,
             '• *Talla:* ' + size,
             '• *Color:* ' + color,
-            '• *Precio franela base:* ' + sym + quote.basePrice.toFixed(2)
+            '• *Precio prenda base:* ' + sym + quote.basePrice.toFixed(2)
         ];
 
         if (quote.breakdown.length > 0) {
@@ -643,10 +720,10 @@ document.addEventListener('DOMContentLoaded', function () {
         lines.push('');
         lines.push('_(Adjunto mi vista previa y archivos del diseño)_');
 
-        const url = 'https://wa.me/' + ZULIFE_CONFIG.whatsappNumber + '?text=' + encodeURIComponent(lines.join('\n'));
+        const url = 'https://wa.me/' + SUBLIFE_CONFIG.whatsappNumber + '?text=' + encodeURIComponent(lines.join('\n'));
         window.open(url, '_blank');
     });
 
-    updateSummaryAndBadge();
-    loadMockup('front');
+    // Inicia mostrando el catálogo de prendas SUBLIFE
+    renderCatalog();
 });
