@@ -6,48 +6,64 @@
     <title>SUBLIFE — Personalizador de Franelas DTF</title>
     <style>
         * { box-sizing: border-box; }
-        body {
+        html, body {
             margin: 0;
+            padding: 0;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background: #f4f6f9;
             color: #1d2327;
         }
         header {
+            width: 100%;
             background: #111827;
             color: #fff;
-            padding: 16px 20px;
+            padding: 14px 16px;
             text-align: center;
+        }
+        header img {
+            height: 42px;
+            max-width: 85%;
+            width: auto;
+            display: block;
+            margin: 0 auto 6px;
         }
         header h1 {
             margin: 0;
-            font-size: 22px;
-            letter-spacing: 0.5px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
         }
         header p {
             margin: 4px 0 0;
-            font-size: 13px;
+            font-size: 12.5px;
             color: #cbd5e1;
         }
         .zl-container {
+            width: 100%;
             max-width: 980px;
-            margin: 20px auto;
-            padding: 0 15px 40px;
+            margin: 18px auto;
+            padding: 0 12px 40px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 18px;
         }
         @media (max-width: 820px) {
             .zl-container { grid-template-columns: 1fr; }
         }
         .zl-card {
+            width: 100%;
+            min-width: 0;
             background: #fff;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 18px;
+            padding: 16px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         .zl-section-title {
-            margin: 0 0 12px;
+            margin: 0 0 10px;
             font-size: 15px;
             font-weight: 700;
             color: #0f172a;
@@ -56,13 +72,13 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .zl-btn-tab {
             background: #e2e8f0;
             color: #1e293b;
             border: none;
-            padding: 9px 13px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-weight: 600;
             font-size: 13px;
@@ -72,18 +88,22 @@
             background: #111827;
             color: #fff;
         }
-        .zl-select, .zl-input {
+        .zl-select {
             width: 100%;
             padding: 9px 10px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             font-size: 14px;
+            background: #fff;
         }
         .zl-grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 480px) {
+            .zl-grid-2 { grid-template-columns: 1fr; }
         }
         .zl-zoom-bar {
             display: flex;
@@ -92,7 +112,7 @@
             background: #f8fafc;
             border: 1px solid #cbd5e1;
             border-bottom: none;
-            padding: 8px 12px;
+            padding: 8px 10px;
             border-radius: 8px 8px 0 0;
         }
         .zl-zoom-btn {
@@ -110,10 +130,11 @@
             justify-content: center;
             align-items: flex-start;
             overflow: auto;
+            max-width: 100%;
             max-height: 540px;
             background: #fff;
             border: 1px solid #cbd5e1;
-            padding: 10px;
+            padding: 8px;
             border-radius: 0 0 8px 8px;
         }
         #zl-canvas-stage {
@@ -183,16 +204,6 @@
             font-weight: 600;
             cursor: pointer;
         }
-        .zl-btn-action {
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            padding: 9px 14px;
-            border-radius: 6px;
-            font-size: 13.5px;
-            font-weight: 600;
-            cursor: pointer;
-        }
         .zl-btn-danger {
             background: #dc2626;
             color: #fff;
@@ -207,10 +218,14 @@
 </head>
 <body>
 
-<header style="background:#111827; color:#fff; padding:16px 20px; text-align:center;">
-    <img src="assets/images/logo-sublife.png" alt="SUBLIFE" style="height:46px; width:auto; display:block; margin:0 auto 6px;">
-    <h1 style="margin:0; font-size:17px; font-weight:700; letter-spacing:0.3px;">Personalizador de Franelas con DTF</h1>
-    <p style="margin:4px 0 0; font-size:13px; color:#cbd5e1;">Elige talla y color de tu franela, sube tu diseño y cotiza al instante</p>
+<header>
+    <img
+        src="assets/images/logo-sublife.png"
+        alt="SUBLIFE"
+        onerror="if (!this.dataset.triedOriginal) { this.dataset.triedOriginal = '1'; this.src = 'assets/images/01 logo sublife.png'; } else { this.style.display = 'none'; }"
+    >
+    <h1>Personalizador de Franelas con DTF</h1>
+    <p>Elige talla y color de tu franela, sube tu diseño y cotiza al instante</p>
 </header>
 
 <div class="zl-container">
@@ -242,7 +257,7 @@
         </div>
     </div>
 
-    <!-- Columna Derecha: Franela, Diseño, Texto y Pedido -->
+    <!-- Columna Derecha: Franela, Diseño y Pedido -->
     <div class="zl-card">
         <div class="zl-section-title">2. Selecciona talla y color de franela:</div>
         <div class="zl-grid-2">
@@ -268,18 +283,12 @@
 
         <hr style="border:none; border-top:1px solid #e2e8f0; margin:14px 0;">
 
-        <div class="zl-section-title">3. Sube tu logo o agrega texto:</div>
-        <div style="margin-bottom:12px;">
+        <div class="zl-section-title">3. Sube tu imagen o logo:</div>
+        <div style="margin-bottom:14px;">
             <input type="file" id="zlUploadImage" accept="image/png, image/jpeg, image/svg+xml" style="max-width:100%;">
-            <p style="margin:5px 0 0; font-size:12px; color:#64748b;">
+            <p style="margin:6px 0 0; font-size:12px; color:#64748b;">
                 El fondo se limpia y el recuadro se recorta automáticamente al subir tu imagen.
             </p>
-        </div>
-
-        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-            <input type="text" id="zlTextInput" class="zl-input" placeholder="Escribe un texto..." style="flex:1; min-width:160px;">
-            <input type="color" id="zlTextColor" value="#111827" title="Color del texto" style="width:42px; height:38px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;">
-            <button type="button" id="zlAddTextBtn" class="zl-btn-action">Agregar Texto</button>
         </div>
 
         <div style="margin-bottom:16px;">
